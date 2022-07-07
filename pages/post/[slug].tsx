@@ -5,6 +5,9 @@ import Header from '../../components/Header';
 import { sanityClient, urlFor } from '../../sanity';
 import { Post } from '../../typings';
 import { useForm, SubmitHandler } from 'react-hook-form';
+import Image from 'next/image';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 type FormInputData = {
   _id: string;
@@ -22,42 +25,53 @@ const Post = ({ post }: Props) => {
     formState: { errors },
   } = useForm<FormInputData>();
 
-  const [submitted, setSubmitted] = useState(false);
+  const [inProgress, setInProgress] = useState(false);
+  const notify = () => {
+    toast('Thank you for the comment! It will be published after approval');
+  };
 
   const onSubmit: SubmitHandler<FormInputData> = (data) => {
+    setInProgress(true);
     fetch('/api/createComment', {
       method: 'Post',
       body: JSON.stringify(data),
     })
       .then(() => {
-        console.log(data);
-        setSubmitted(true);
+        setInProgress(false);
+
+        notify();
       })
       .catch((err) => {
-        console.log(err);
-        setSubmitted(false);
+        setInProgress(false);
       });
   };
 
   return (
     <main>
       <Header />
-      <img
-        className="w-full h-40 object-cover"
-        src={urlFor(post.mainImage).url()!}
-        alt=""
-      />
+      <div className="relative w-full h-40">
+        <Image
+          src={urlFor(post.mainImage).url()!}
+          layout="fill"
+          objectFit="cover"
+        />
+      </div>
+
       <article className="max-w-3xl mx-auto p-5">
         <h1 className="text-3xl mt-10 mb-3">{post.title}</h1>
         <h2 className="text-xl font-light text-grey-500 mb-2">
           {post.description}
         </h2>
         <div className="flex items-center space-x-2">
-          <img
-            className="h-10 w-10 rounded-full object-cover"
-            src={urlFor(post.author.image).url()!}
-            alt=""
-          />
+          <div className="relative h-10 w-10">
+            <Image
+              src={urlFor(post.author.image).url()!}
+              layout="fill"
+              objectFit="cover"
+              className="rounded-full"
+            />
+          </div>
+
           <p className="font-extralight text-sm">
             Blog post by{' '}
             <span className="text-green-600">{post.author.name}</span> -
@@ -86,80 +100,71 @@ const Post = ({ post }: Props) => {
           />
         </div>
       </article>
-      <hr className="max-w-lg my-5 mx-auto border border-yellow-500 "></hr>
-      {submitted ? (
-        // <h1>aa</h1>
-        <div className="flex flex-col p-10 my-10 bg-yellow-500 text-white mx-w-2xl mx-auto">
-          <h3 className="text-3xl font-bold">Thank you for your Comment..</h3>
-          <p>Your Comment will be published after approval</p>
+      <hr className="max-w-lg my-5 mx-auto border border-blue-500 "></hr>
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="flex flex-col p-5 max-w-2xl mx-auto mb-10"
+      >
+        <h3 className="text-sm text-blue-800">Enjoyed this Article?</h3>
+        <h4 className="text-3xl font-bold">Leave a Comment Bellow..</h4>
+        <hr className="py-3 mt-2" />
+        <input {...register('_id')} type="hidden" name="_id" value={post._id} />
+        <label className="block mb-5">
+          <span className="text-gray-700">Name</span>
+          <input
+            {...register('name', { required: true })}
+            className="shadow border rounded py-2 px-3 form-input mt-1 block w-full ring-blue-500 outline-none focus:ring"
+            placeholder="text to type"
+            type="text"
+          ></input>
+        </label>
+        <label className="block mb-5">
+          <span className="text-gray-700">Email</span>
+          <input
+            {...register('email', { required: true })}
+            className="shadow border rounded py-2 px-3 form-input mt-1 block w-full ring-blue-500 outline-none focus:ring"
+            placeholder="text to type"
+            type="email"
+          ></input>
+        </label>
+        <label className="block mb-5">
+          <span className="text-gray-700">Comment</span>
+          <textarea
+            {...register('comment', { required: true })}
+            className="shadow border rounded py-2 px-3 form-textarea mt-1 block w-full ring-blue-500 outline-none focus:ring"
+            placeholder="textarea to type"
+            rows={8}
+          />
+        </label>
+        <div className="flex flex-col p-5">
+          {errors.name && (
+            <span className="text-red-500">The Name Field is Required</span>
+          )}
+          {errors.email && (
+            <span className="text-red-500">The Email Field is Required</span>
+          )}
+          {errors.comment && (
+            <span className="text-red-500">The Comment Field is Required</span>
+          )}
         </div>
-      ) : (
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col p-5 max-w-2xl mx-auto mb-10"
+
+        <button
+          type="submit"
+          className="bg-indigo-500 text-white hover:bg-blue-400 p-4 rounded-md cursor-pointer focus:shadow-outline focus:outline-none"
         >
-          <h3 className="text-sm text-yellow-500">Enjoyed this Article?</h3>
-          <h4 className="text-3xl font-bold">Leave a Comment Bellow..</h4>
-          <hr className="py-3 mt-2" />
-          <input
-            {...register('_id')}
-            type="hidden"
-            name="_id"
-            value={post._id}
-          />
-          <label className="block mb-5">
-            <span className="text-gray-700">Name</span>
-            <input
-              {...register('name', { required: true })}
-              className="shadow border rounded py-2 px-3 form-input mt-1 block w-full ring-yellow-500 outline-none focus:ring"
-              placeholder="text to type"
-              type="text"
-            ></input>
-          </label>
-          <label className="block mb-5">
-            <span className="text-gray-700">Email</span>
-            <input
-              {...register('email', { required: true })}
-              className="shadow border rounded py-2 px-3 form-input mt-1 block w-full ring-yellow-500 outline-none focus:ring"
-              placeholder="text to type"
-              type="email"
-            ></input>
-          </label>
-          <label className="block mb-5">
-            <span className="text-gray-700">Comment</span>
-            <textarea
-              {...register('comment', { required: true })}
-              className="shadow border rounded py-2 px-3 form-textarea mt-1 block w-full ring-yellow-500 outline-none focus:ring"
-              placeholder="textarea to type"
-              rows={8}
-            />
-          </label>
-          <div className="flex flex-col p-5">
-            {errors.name && (
-              <span className="text-red-500">The Name Field is Required</span>
-            )}
-            {errors.email && (
-              <span className="text-red-500">The Email Field is Required</span>
-            )}
-            {errors.comment && (
-              <span className="text-red-500">
-                The Comment Field is Required
-              </span>
-            )}
-          </div>
-          <input
-            type="submit"
-            className="shadow bg-yellow-500 hover:bg-yellow-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded cursor-pointer"
-          />
-        </form>
-      )}
-      <div className="flex flex-col p-10 my-10 max-w-2xl mx-auto shadow-yellow-500 shadow space-y-2">
+          {inProgress ? <div>Processing...</div> : <div>Add Comment</div>}
+        </button>
+      </form>
+
+      <div className="flex flex-col p-10 my-10 max-w-2xl mx-auto shadow-blue-500 shadow space-y-2">
+        <ToastContainer />
         <h3 className="text-4xl">Comments</h3>
         <hr className="pb-2" />
         {post.comments.map((comment) => (
           <div key={comment._id}>
             <p>
-              <span className="text-yellow-500">{comment.name}:</span>
+              <span className="text-blue-500">{comment.name}:</span>
               {comment.comment}
             </p>
           </div>

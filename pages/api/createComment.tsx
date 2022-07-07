@@ -1,4 +1,3 @@
-// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sanityClient from '@sanity/client';
 
@@ -30,6 +29,6 @@ export default async function createComment(
   } catch (err) {
     return res.status(500).json({ message: `Couldn't submit comment`, err });
   }
-  console.log('Comment Submitted ');
+
   res.status(200).json({ message: 'Comment Submitted' });
 }

@@ -10,7 +10,6 @@ type Props = {
   posts: [Post];
 };
 const Home = ({ posts }: Props) => {
-  console.log(' postspostsposts ', posts);
   return (
     <div className="max-w-7xl mx-auto">
       <Head>
@@ -39,12 +38,15 @@ const Home = ({ posts }: Props) => {
       <div className="grid gird-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 p-2 md:p-6">
         {posts.map((post: Post) => (
           <Link key={post._id} href={`/post/${post.slug.current}`}>
-            <div className="group cursor-pointer border rounded-lg overflow-hidden">
-              <img
-                className="h-60 w-full object-cover group-hover:scale-105 transition-transform duration-200 ease-in-out"
-                src={urlFor(post.mainImage).url()!}
-                alt=""
-              />
+            <div className="group cursor-pointer border rounded-lg overflow-hidden ">
+              <div className="relative h-80 w-160">
+                <Image
+                  src={urlFor(post.mainImage).url()!}
+                  layout="fill"
+                  objectFit="cover"
+                  className="group-hover:scale-105 transition-transform duration-200 "
+                />
+              </div>
               <div className="flex justify-between p-5 bg-white">
                 <div>
                   <p>{post.title}</p>
@@ -52,11 +54,14 @@ const Home = ({ posts }: Props) => {
                     {post.description} by {post.author.name}
                   </p>
                 </div>
-                <img
-                  className="h-12 w-12 rounded-full"
-                  src={urlFor(post.author.image).url()!}
-                  alt=""
-                />
+                <div className="relative h-12 w-12">
+                  <Image
+                    src={urlFor(post.author.image).url()!}
+                    layout="fill"
+                    objectFit="cover"
+                    className="rounded-full"
+                  />
+                </div>
               </div>
             </div>
           </Link>
